@@ -159,113 +159,152 @@
     <script src="../js/main.js"></script>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyC2Qa0lMl4WhjhDzNhIzWFTJsIABuSf8nc",
-            authDomain: "totti-c9e6f.firebaseapp.com",
-            projectId: "totti-c9e6f",
-            storageBucket: "totti-c9e6f.firebasestorage.app",
-            messagingSenderId: "938110274522",
-            appId: "1:938110274522:web:69a16be8aa09ce7b2a0ee3",
-            measurementId: "G-9HWWDZGQRN"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyC2Qa0lMl4WhjhDzNhIzWFTJsIABuSf8nc",
+        authDomain: "totti-c9e6f.firebaseapp.com",
+        projectId: "totti-c9e6f",
+        storageBucket: "totti-c9e6f.firebasestorage.app",
+        messagingSenderId: "938110274522",
+        appId: "1:938110274522:web:69a16be8aa09ce7b2a0ee3",
+        measurementId: "G-9HWWDZGQRN"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const agendamentosRef = collection(db, "agendamentos");
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const agendamentosRef = collection(db, "agendamentos");
 
-        let currentMonth = new Date();
-        let selectedDate = null;
-        let selectedTime = null;
-        let agendamentos = {};
+    let currentMonth = new Date();
+    let selectedDate = null;
+    let selectedTime = null;
+    let agendamentos = {}; // { "2025-12-30 10:00": {nome, servico, whats} }
 
-        const horarios = ["09:00","09:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00"];
+    const horarios = ["09:00","09:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00"];
 
-        function renderCalendar() {
-            const year = currentMonth.getFullYear();
-            const month = currentMonth.getMonth();
-            const firstWeekday = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
+    function renderCalendar() {
+        const year = currentMonth.getFullYear();
+        const month = currentMonth.getMonth();
+        const firstWeekday = new Date(year, month, 1).getDay(); // 0=Dom ... 6=Sab
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-            document.getElementById('monthYear').textContent = currentMonth.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase());
+        document.getElementById('monthYear').textContent = 
+            currentMonth.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase());
 
-            const body = document.getElementById('calendarBody');
-            body.innerHTML = '';
+        const body = document.getElementById('calendarBody');
+        body.innerHTML = '';
 
-            for (let i = 0; i < firstWeekday; i++) body.innerHTML += '<div class="day other-month"></div>';
+        // Espaços vazios antes do dia 1
+        for (let i = 0; i < firstWeekday; i++) {
+            body.innerHTML += '<div class="day other-month"></div>';
+        }
 
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-                const hasApps = Object.keys(agendamentos).some(k => k.startsWith(dateStr));
-                const isToday = day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear();
+        // Dias do mês
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const hasApps = Object.keys(agendamentos).some(k => k.startsWith(dateStr));
+            const isToday = day === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear();
 
-                body.innerHTML += `<div class="day ${hasApps?'has-slots':'no-slots'} ${isToday?'today':''}" onclick="selectDay('${dateStr}', event)">${day}</div>`;
+            // SEMPRE clicável, mesmo sem agendamentos
+            body.innerHTML += `
+                <div class="day ${hasApps ? 'has-slots' : ''} ${isToday ? 'today' : ''}" 
+                     onclick="selectDay('${dateStr}', event)">
+                    ${day}
+                </div>`;
+        }
+    }
+
+    function selectDay(dateStr, e) {
+        selectedDate = dateStr;
+        document.querySelectorAll('.day.selected').forEach(d => d.classList.remove('selected'));
+        e.target.classList.add('selected');
+
+        document.getElementById('selectedDayTitle').textContent = 
+            new Date(dateStr).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+
+        renderSlots(dateStr);
+    }
+
+    function renderSlots(dateStr) {
+        const container = document.getElementById('slotsContainer');
+        container.innerHTML = '<p class="text-muted"><strong>Horários do dia:</strong></p>';
+
+        horarios.forEach(hora => {
+            const chave = `${dateStr} ${hora}`;
+            const ag = agendamentos[chave];
+
+            const slot = document.createElement('div');
+            slot.className = `slot ${ag ? 'occupied' : 'free'}`;
+            slot.innerHTML = `
+                <strong>${hora}</strong>
+                ${ag ? `<div class="client-name">${ag.nome} - ${ag.servico}</div><small>${ag.whats}</small>` : ''}
+            `;
+
+            if (!ag) {
+                slot.onclick = () => {
+                    selectedTime = hora;
+                    document.getElementById('modalDateTime').textContent = 
+                        new Date(dateStr).toLocaleDateString('pt-BR') + ' às ' + hora;
+                    new bootstrap.Modal(document.getElementById('modalAgendar')).show();
+                };
             }
+
+            container.appendChild(slot);
+        });
+    }
+
+    window.confirmarAgendamento = async () => {
+        const nome = document.getElementById('clienteNome').value.trim();
+        const whats = document.getElementById('clienteWhats').value.trim();
+        const servico = document.getElementById('servico').value;
+
+        if (!nome || !whats || !servico) {
+            alert('Preencha nome, WhatsApp e serviço!');
+            return;
         }
 
-        function selectDay(dateStr, e) {
-            selectedDate = dateStr;
-            document.querySelectorAll('.day.selected').forEach(d => d.classList.remove('selected'));
-            e.target.classList.add('selected');
-            document.getElementById('selectedDayTitle').textContent = new Date(dateStr).toLocaleDateString('pt-BR', {weekday:'long', day:'numeric', month:'long'});
-            renderSlots(dateStr);
-        }
+        const dataHora = `${selectedDate} ${selectedTime}`;
 
-        function renderSlots(dateStr) {
-            const container = document.getElementById('slotsContainer');
-            container.innerHTML = '<p class="text-muted"><strong>Horários do dia:</strong></p>';
-
-            horarios.forEach(hora => {
-                const chave = `${dateStr} ${hora}`;
-                const ag = agendamentos[chave];
-                const slot = document.createElement('div');
-                slot.className = `slot ${ag ? 'occupied' : 'free'}`;
-                slot.innerHTML = `<strong>${hora}</strong>${ag ? `<div class="client-name">${ag.nome} - ${ag.servico}</div><small>${ag.whats}</small>` : ''}`;
-                if (!ag) {
-                    slot.onclick = () => {
-                        selectedTime = hora;
-                        document.getElementById('modalDateTime').textContent = new Date(dateStr).toLocaleDateString('pt-BR') + ' às ' + hora;
-                        new bootstrap.Modal(document.getElementById('modalAgendar')).show();
-                    };
-                }
-                container.appendChild(slot);
+        try {
+            await addDoc(agendamentosRef, {
+                dataHora,
+                data: selectedDate,
+                hora: selectedTime,
+                nome,
+                whats,
+                servico,
+                criadoEm: new Date()
             });
+
+            alert(`Agendado com sucesso: ${nome} às ${selectedTime}!`);
+            bootstrap.Modal.getInstance(document.getElementById('modalAgendar')).hide();
+            document.getElementById('formAgendar').reset();
+        } catch (e) {
+            console.error(e);
+            alert('Erro ao salvar. Abra o console (F12) e me envie o erro.');
         }
+    };
 
-        window.confirmarAgendamento = async () => {
-            const nome = document.getElementById('clienteNome').value.trim();
-            const whats = document.getElementById('clienteWhats').value.trim();
-            const servico = document.getElementById('servico').value;
-            if (!nome || !whats || !servico) return alert('Preencha os campos obrigatórios!');
-
-            const dataHora = `${selectedDate} ${selectedTime}`;
-            try {
-                await addDoc(agendamentosRef, { dataHora, data: selectedDate, hora: selectedTime, nome, whats, servico, criadoEm: new Date() });
-                alert(`Agendado: ${nome} às ${selectedTime}`);
-                bootstrap.Modal.getInstance(document.getElementById('modalAgendar')).hide();
-                document.getElementById('formAgendar').reset();
-            } catch (e) {
-                console.error(e);
-                alert('Erro ao salvar. Veja o console.');
-            }
-        };
-
-        onSnapshot(agendamentosRef, snap => {
-            agendamentos = {};
-            snap.forEach(doc => {
-                const d = doc.data();
-                agendamentos[d.dataHora] = { nome: d.nome, whats: d.whats, servico: d.servico };
-            });
-            renderCalendar();
-            if (selectedDate) renderSlots(selectedDate);
+    // Escuta agendamentos em tempo real
+    onSnapshot(agendamentosRef, snap => {
+        agendamentos = {};
+        snap.forEach(doc => {
+            const d = doc.data();
+            agendamentos[d.dataHora] = { nome: d.nome, whats: d.whats, servico: d.servico };
         });
 
-        window.prevMonth = () => { currentMonth.setMonth(currentMonth.getMonth()-1); renderCalendar(); };
-        window.nextMonth = () => { currentMonth.setMonth(currentMonth.getMonth()+1); renderCalendar(); };
-
         renderCalendar();
-    </script>
+        if (selectedDate) renderSlots(selectedDate);
+    });
+
+    // Navegação
+    window.prevMonth = () => { currentMonth.setMonth(currentMonth.getMonth() - 1); renderCalendar(); };
+    window.nextMonth = () => { currentMonth.setMonth(currentMonth.getMonth() + 1); renderCalendar(); };
+
+    // Inicia
+    renderCalendar();
+</script>
 </body>
 </html>
+
