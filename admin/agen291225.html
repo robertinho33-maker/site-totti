@@ -2,81 +2,80 @@
 <html lang="pt-br">
 <head>
     <meta charset="utf-8">
-    <title>Studio Totti</title>
+    <title>Studio Totti | Gestão de Agenda</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Playfair+Display:wght@500&family=Work+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
-    
-    <link href="../lib/animate/animate.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="../css/style.css" rel="stylesheet">
 
     <style>
-        :root { --primary-gold: #c5a059; --dark-bg: #1a1a1a; }
-        .calendar { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,.08); border: 1px solid #eee; }
-        .calendar-header { background: var(--bs-primary); color: #fff; padding: 25px; }
-        .days-header { display: grid; grid-template-columns: repeat(7,1fr); text-align: center; background: #fdfdfd; padding: 15px 0; border-bottom: 1px solid #eee; font-weight: 600; color: #666; }
-        .calendar-body { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; background: #eee; padding: 1px; }
-        .day { background: #fff; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all .2s ease; position: relative; }
-        .day:hover:not(.other-month) { background: #f0f7ff; color: var(--bs-primary); }
+        :root { --bs-primary: #c5a059; } /* Tom dourado elegante */
+        body { font-family: 'Work Sans', sans-serif; background-color: #f4f7f6; }
+        
+        /* Calendário */
+        .calendar { background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,.05); overflow: hidden; }
+        .calendar-header { background: var(--bs-primary); color: white; padding: 20px; }
+        .days-header { display: grid; grid-template-columns: repeat(7,1fr); text-align: center; background: #f8f9fa; padding: 10px; font-weight: bold; border-bottom: 1px solid #eee; }
+        .calendar-body { display: grid; grid-template-columns: repeat(7,1fr); gap: 1px; background: #eee; }
+        .day { background: white; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; position: relative; font-weight: 500; }
+        .day:hover:not(.other-month) { background: #fff9ed; color: var(--bs-primary); }
         .day.other-month { color: #ccc; background: #fafafa; cursor: default; }
-        .day.today { font-weight: 800; color: var(--bs-primary); text-decoration: underline; }
-        .day.selected { background: var(--bs-primary) !important; color: #fff !important; z-index: 1; }
-        .day.has-apps::after { content: ''; position: absolute; bottom: 8px; width: 6px; height: 6px; background: #ff4757; border-radius: 50%; }
+        .day.today { color: var(--bs-primary); font-weight: 800; text-decoration: underline; }
+        .day.selected { background: var(--bs-primary) !important; color: white !important; }
+        .day.has-apps::after { content: ''; position: absolute; bottom: 5px; width: 5px; height: 5px; background: #dc3545; border-radius: 50%; }
+
+        /* Slots e Agendamentos */
+        .slot-group { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #e0e0e0; }
+        .slot-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px dashed #ddd; padding-bottom: 8px; }
+        .app-card { background: #fdfdfd; border-left: 4px solid var(--bs-primary); padding: 12px; margin-bottom: 8px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; }
+        .app-card:hover { background: #f8f9fa; }
+        .btn-add-client { border: 1px dashed var(--bs-primary); color: var(--bs-primary); font-size: 0.8rem; font-weight: 600; padding: 2px 8px; border-radius: 20px; transition: 0.2s; }
+        .btn-add-client:hover { background: var(--bs-primary); color: white; }
         
-        .slots-wrapper { max-height: 65vh; overflow-y: auto; padding-right: 10px; }
-        .slot { padding: 15px; margin-bottom: 12px; border-radius: 12px; border: 2px solid transparent; transition: all .2s ease; display: flex; align-items: center; justify-content: space-between; }
-        .slot.free { background: #f8fff9; border-color: #d1e7dd; cursor: pointer; }
-        .slot.free:hover { border-color: #198754; transform: scale(1.02); }
-        .slot.occupied { background: #fff5f5; border-color: #f8d7da; opacity: 0.8; }
-        .slot-time { font-size: 1.1rem; font-weight: 700; color: #333; }
+        .action-btns i { cursor: pointer; padding: 5px; transition: 0.2s; opacity: 0.7; }
+        .action-btns i:hover { opacity: 1; transform: scale(1.1); }
         
-        /* Mobile adjustment */
-        @media (max-width: 768px) { .calendar-header h3 { font-size: 1.2rem; } .day { font-size: 0.9rem; } }
+        #slotsContainer { max-height: 70vh; overflow-y: auto; padding-right: 5px; }
+        #spinner { z-index: 9999; }
     </style>
 </head>
 <body>
+
     <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
+        <div class="spinner-border text-primary" style="width:3rem;height:3rem;"></div>
     </div>
 
-    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
         <div class="container">
-            <a href="../index.html" class="navbar-brand d-flex align-items-center">
-                <span class="bg-primary text-white p-2 rounded-3 me-2"><i class="bi bi-scissors"></i></span>
-                <h4 class="m-0">Studio Totti 01</h4>
+            <a href="../index.html" class="navbar-brand">
+                <i class="bi bi-scissors me-2 text-primary"></i>Studio Totti
             </a>
-            <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"><span class="navbar-toggler-icon"></span></button>
-            <div class="collapse navbar-collapse" id="navbarCollapse">
-                <div class="navbar-nav ms-auto">
-                    <a href="../index.html" class="nav-link">Site</a>
-                    <a href="servicos-novo.html" class="nav-link">Serviços</a>
-                    <a href="agenda.html" class="nav-link">Agenda</a>
-                    <a href="agendamento-funcionario.html" class="nav-link active">Novo Agendamento</a>
-                </div>
+            <div class="navbar-nav ms-auto d-none d-lg-flex">
+                <a href="agenda.html" class="nav-link">Agenda Diária</a>
+                <a href="agendamento-funcionario.html" class="nav-link active">Gestão de Horários</a>
             </div>
         </div>
     </nav>
 
-    <div class="container-fluid bg-primary py-5 mb-5">
-        <div class="container text-center py-4">
-            <h1 class="display-4 text-white animated fadeInDown">Painel de Agendamento</h1>
-            <p class="text-white-50 mb-0">Gestão interna de horários e clientes</p>
+    <div class="container-fluid bg-light py-4 mb-4 border-bottom">
+        <div class="container">
+            <h2 class="mb-0">Painel de Agendamento Interno</h2>
+            <p class="text-muted">Gestão múltipla de profissionais e clientes</p>
         </div>
     </div>
 
     <div class="container pb-5">
         <div class="row g-4">
             <div class="col-lg-7">
-                <div class="calendar wow fadeIn">
+                <div class="calendar">
                     <div class="calendar-header d-flex justify-content-between align-items-center">
-                        <button class="btn btn-outline-light border-0" onclick="changeMonth(-1)"><i class="bi bi-chevron-left"></i></button>
-                        <h3 id="monthYear" class="mb-0 text-uppercase tracking-wider">Dezembro 2025</h3>
-                        <button class="btn btn-outline-light border-0" onclick="changeMonth(1)"><i class="bi bi-chevron-right"></i></button>
+                        <button class="btn btn-sm btn-outline-light" onclick="changeMonth(-1)"><i class="bi bi-chevron-left"></i></button>
+                        <h4 id="monthYear" class="mb-0 text-uppercase"></h4>
+                        <button class="btn btn-sm btn-outline-light" onclick="changeMonth(1)"><i class="bi bi-chevron-right"></i></button>
                     </div>
                     <div class="days-header">
                         <div>DOM</div><div>SEG</div><div>TER</div><div>QUA</div><div>QUI</div><div>SEX</div><div>SÁB</div>
@@ -86,15 +85,13 @@
             </div>
 
             <div class="col-lg-5">
-                <div class="card border-0 shadow-sm rounded-4 sticky-top" style="top:100px;">
-                    <div class="card-body p-4">
-                        <div class="text-center mb-4">
-                            <h5 id="selectedDayTitle" class="text-muted">Selecione uma data no calendário</h5>
-                            <hr class="w-25 mx-auto">
-                        </div>
-                        <div id="slotsContainer" class="slots-wrapper">
-                            <div class="text-center py-5">
-                                <i class="bi bi-calendar-event display-1 text-light"></i>
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body">
+                        <h5 id="selectedDayTitle" class="text-primary text-center mb-4">Selecione uma data</h5>
+                        <div id="slotsContainer">
+                            <div class="text-center py-5 text-muted">
+                                <i class="bi bi-calendar2-check display-4 d-block mb-3"></i>
+                                Clique em um dia para gerenciar
                             </div>
                         </div>
                     </div>
@@ -103,45 +100,53 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modalAgendar" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="modalAgendar" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow">
-                <div class="modal-header bg-dark text-white border-0">
-                    <h5 class="modal-title"><i class="bi bi-clock me-2"></i>Reservar <span id="modalDateTime"></span></h5>
+            <div class="modal-content shadow-lg border-0">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalTitle">Novo Agendamento</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <form id="formAgendar" class="needs-validation" novalidate>
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold text-uppercase">Nome do Cliente</label>
-                            <input type="text" class="form-control" id="clienteNome" placeholder="Ex: Maria Oliveira" required>
+                    <form id="formAgendar">
+                        <input type="hidden" id="editId">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label fw-bold small">NOME DO CLIENTE</label>
+                                <input type="text" class="form-control" id="clienteNome" required placeholder="Ex: Maria Silva">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">WHATSAPP</label>
+                                <input type="tel" class="form-control" id="clienteWhats" required placeholder="(11) 99999-9999">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">PROFISSIONAL</label>
+                                <select class="form-select" id="profissional" required>
+                                    <option value="">Selecione...</option>
+                                    <option>Ana</option>
+                                    <option>Juliana</option>
+                                    <option>Fernanda</option>
+                                    <option>Patrícia</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold small">SERVIÇO</label>
+                                <select class="form-select" id="servico" required>
+                                    <option value="">Selecione...</option>
+                                    <option>Corte Feminino</option>
+                                    <option>Manicure + Pedicure</option>
+                                    <option>Limpeza de Pele</option>
+                                    <option>Massagem</option>
+                                    <option>Maquiagem</option>
+                                    <option>Hidratação</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold text-uppercase">WhatsApp</label>
-                            <input type="tel" class="form-control" id="clienteWhats" placeholder="(00) 00000-0000" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold text-uppercase">Serviço</label>
-                            <select class="form-select" id="servico" required>
-                                <option value="" selected disabled>Escolha o serviço...</option>
-                                <option>Corte Feminino</option>
-                                <option>Manicure + Pedicure</option>
-                                <option>Hidratação + Escova</option>
-                                <option>Limpeza de Pele</option>
-                            </select>
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label small fw-bold text-uppercase">Profissional</label>
-                            <select class="form-select" id="profissional">
-                                <option>Ana (Cabelo)</option>
-                                <option>Juliana (Estética)</option>
-                                <option>Fernanda (Unhas)</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm" id="btnSalvar">
-                            CONFIRMAR AGENDAMENTO
-                        </button>
                     </form>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary px-4" onclick="salvarAgendamento()">Salvar Agendamento</button>
                 </div>
             </div>
         </div>
@@ -149,13 +154,12 @@
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../lib/wow/wow.min.js"></script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-        // Configuração Firebase (Mantenha a sua original)
+        // Configuração Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyC2Qa0lMl4WhjhDzNhIzWFTJsIABuSf8nc",
             authDomain: "totti-c9e6f.firebaseapp.com",
@@ -170,154 +174,178 @@
         const agendamentosRef = collection(db, "agendamentos");
 
         // Estado Global
-        let state = {
-            currentMonth: new Date(),
-            selectedDate: null,
-            selectedTime: null,
-            agendamentos: {}
-        };
+        let currentMonth = new Date();
+        let selectedDate = null;
+        let selectedTime = null;
+        let allAgendamentos = [];
 
-        const HORARIOS_PADRAO = ["09:00","10:00","11:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00"];
+        const horarios = ["09:00","09:30","10:00","10:30","11:00","11:30","12:00","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00"];
 
-        // Funções de UI
+        // Renderizar Calendário
         function renderCalendar() {
-            const year = state.currentMonth.getFullYear();
-            const month = state.currentMonth.getMonth();
+            const year = currentMonth.getFullYear();
+            const month = currentMonth.getMonth();
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-            
-            document.getElementById('monthYear').textContent = state.currentMonth.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+            document.getElementById('monthYear').textContent = currentMonth.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
             const body = document.getElementById('calendarBody');
             body.innerHTML = '';
 
-            // Dias vazios
             for (let i = 0; i < firstDay; i++) {
                 body.insertAdjacentHTML('beforeend', '<div class="day other-month"></div>');
             }
 
-            // Dias do mês
-            const today = new Date();
+            const today = new Date().toISOString().split('T')[0];
+
             for (let day = 1; day <= daysInMonth; day++) {
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const hasApps = Object.keys(state.agendamentos).some(k => k.startsWith(dateStr));
-                const isToday = today.getDate() === day && today.getMonth() === month && today.getFullYear() === year;
-                const isSelected = state.selectedDate === dateStr;
-
-                const dayEl = document.createElement('div');
-                dayEl.className = `day ${hasApps ? 'has-apps' : ''} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}`;
-                dayEl.textContent = day;
-                dayEl.onclick = (e) => handleDaySelection(dateStr, e);
-                body.appendChild(dayEl);
+                const hasApps = allAgendamentos.some(a => a.data === dateStr);
+                const isSelected = selectedDate === dateStr;
+                
+                const dayDiv = document.createElement('div');
+                dayDiv.className = `day ${hasApps ? 'has-apps' : ''} ${isSelected ? 'selected' : ''}`;
+                dayDiv.textContent = day;
+                dayDiv.onclick = (e) => selectDay(dateStr, e);
+                body.appendChild(dayDiv);
             }
         }
 
-        function handleDaySelection(dateStr, e) {
-            state.selectedDate = dateStr;
-            document.querySelectorAll('.day').forEach(d => d.classList.remove('selected'));
-            e.currentTarget.classList.add('selected');
+        // Selecionar Dia
+        window.selectDay = (dateStr) => {
+            selectedDate = dateStr;
+            renderCalendar();
             
-            const dateObj = new Date(dateStr + 'T12:00:00'); // Evita erro de fuso
+            const dateObj = new Date(dateStr + 'T12:00:00');
             document.getElementById('selectedDayTitle').innerHTML = `
-                <span class="text-primary d-block fw-bold">${dateObj.toLocaleDateString('pt-BR', { weekday: 'long' })}</span>
-                <span class="small">${dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}</span>
+                <span class="d-block text-dark">${dateObj.toLocaleDateString('pt-BR', { weekday: 'long' })}</span>
+                <small>${dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}</small>
             `;
-            
-            renderSlots(dateStr);
-        }
+            renderSlots();
+        };
 
-        function renderSlots(dateStr) {
+        // Renderizar Horários (Múltiplos clientes por horário)
+        function renderSlots() {
             const container = document.getElementById('slotsContainer');
             container.innerHTML = '';
 
-            HORARIOS_PADRAO.forEach(hora => {
-                const chave = `${dateStr} ${hora}`;
-                const ag = state.agendamentos[chave];
+            horarios.forEach(hora => {
+                const appsNoHorario = allAgendamentos.filter(a => a.dataHora === `${selectedDate} ${hora}`);
                 
-                const slot = document.createElement('div');
-                slot.className = `slot ${ag ? 'occupied shadow-sm' : 'free'}`;
+                const group = document.createElement('div');
+                group.className = 'slot-group shadow-sm';
                 
-                slot.innerHTML = `
-                    <div class="d-flex align-items-center">
-                        <div class="slot-time me-3">${hora}</div>
-                        ${ag ? `<div><div class="fw-bold small">${ag.nome}</div><div class="text-muted" style="font-size:0.7rem">${ag.servico}</div></div>` : ''}
-                    </div>
-                    ${ag ? `<i class="bi bi-lock-fill text-danger"></i>` : `<i class="bi bi-plus-circle text-success"></i>`}
-                `;
+                let appsHtml = '';
+                appsNoHorario.forEach(ag => {
+                    appsHtml += `
+                        <div class="app-card">
+                            <div>
+                                <div class="fw-bold">${ag.nome}</div>
+                                <div class="small text-muted">${ag.servico} - <span class="text-primary">${ag.profissional}</span></div>
+                            </div>
+                            <div class="action-btns">
+                                <i class="bi bi-pencil-square text-warning me-2" onclick="abrirModal('${selectedDate}', '${hora}', '${ag.id}')"></i>
+                                <i class="bi bi-trash text-danger" onclick="excluirAgendamento('${ag.id}')"></i>
+                            </div>
+                        </div>
+                    `;
+                });
 
-                if (!ag) {
-                    slot.onclick = () => {
-                        state.selectedTime = hora;
-                        document.getElementById('modalDateTime').textContent = `${new Date(dateStr + 'T12:00:00').toLocaleDateString('pt-BR')} às ${hora}`;
-                        new bootstrap.Modal('#modalAgendar').show();
-                    };
-                }
-                container.appendChild(slot);
+                group.innerHTML = `
+                    <div class="slot-header">
+                        <span class="badge bg-dark">${hora}</span>
+                        <button class="btn btn-add-client" onclick="abrirModal('${selectedDate}', '${hora}')">
+                            <i class="bi bi-plus-lg"></i> Adicionar
+                        </button>
+                    </div>
+                    ${appsHtml || '<div class="text-center py-2 small text-light-emphasis">Sem agendamentos</div>'}
+                `;
+                container.appendChild(group);
             });
         }
 
-        // Lógica do Formulário
-        document.getElementById('formAgendar').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btnSalvar');
-            const originalText = btn.innerHTML;
+        // Modal: Abrir para Novo ou Editar
+        window.abrirModal = (data, hora, id = null) => {
+            selectedDate = data;
+            selectedTime = hora;
+            document.getElementById('formAgendar').reset();
+            document.getElementById('editId').value = id || '';
+            document.getElementById('modalTitle').textContent = id ? 'Editar Agendamento' : `Novo Agendamento - ${hora}`;
 
-            const data = {
-                dataHora: `${state.selectedDate} ${state.selectedTime}`,
-                data: state.selectedDate,
-                hora: state.selectedTime,
-                nome: document.getElementById('clienteNome').value.trim(),
-                whats: document.getElementById('clienteWhats').value.trim(),
-                servico: document.getElementById('servico').value,
-                profissional: document.getElementById('profissional').value,
-                criadoEm: new Date().toISOString()
+            if (id) {
+                const ag = allAgendamentos.find(a => a.id === id);
+                if (ag) {
+                    document.getElementById('clienteNome').value = ag.nome;
+                    document.getElementById('clienteWhats').value = ag.whats;
+                    document.getElementById('servico').value = ag.servico;
+                    document.getElementById('profissional').value = ag.profissional;
+                }
+            }
+            new bootstrap.Modal('#modalAgendar').show();
+        };
+
+        // Salvar: Create ou Update
+        window.salvarAgendamento = async () => {
+            const id = document.getElementById('editId').value;
+            const nome = document.getElementById('clienteNome').value.trim();
+            const whats = document.getElementById('clienteWhats').value.trim();
+            const servico = document.getElementById('servico').value;
+            const profissional = document.getElementById('profissional').value;
+
+            if (!nome || !whats || !servico || !profissional) {
+                alert("Por favor, preencha todos os campos.");
+                return;
+            }
+
+            const payload = {
+                dataHora: `${selectedDate} ${selectedTime}`,
+                data: selectedDate,
+                hora: selectedTime,
+                nome, whats, servico, profissional,
+                updatedAt: new Date()
             };
 
             try {
-                btn.disabled = true;
-                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Gravando...';
-                
-                await addDoc(agendamentosRef, data);
-                
+                if (id) {
+                    await updateDoc(doc(db, "agendamentos", id), payload);
+                } else {
+                    await addDoc(agendamentosRef, { ...payload, createdAt: new Date() });
+                }
                 bootstrap.Modal.getInstance('#modalAgendar').hide();
-                document.getElementById('formAgendar').reset();
-                alert('✓ Horário reservado com sucesso!');
-            } catch (err) {
-                alert('Erro ao salvar agendamento.');
-                console.error(err);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalText;
+            } catch (e) {
+                console.error(e);
+                alert("Erro ao salvar agendamento.");
             }
-        });
+        };
 
-        // Máscara Simples para Telefone
-        document.getElementById('clienteWhats').addEventListener('input', (e) => {
-            let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
-            e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
-        });
+        // Excluir
+        window.excluirAgendamento = async (id) => {
+            if (confirm("Deseja realmente cancelar este agendamento?")) {
+                try {
+                    await deleteDoc(doc(db, "agendamentos", id));
+                } catch (e) {
+                    alert("Erro ao excluir.");
+                }
+            }
+        };
 
-        // Navegação de Meses
+        // Navegação Meses
         window.changeMonth = (dir) => {
-            state.currentMonth.setMonth(state.currentMonth.getMonth() + dir);
+            currentMonth.setMonth(currentMonth.getMonth() + dir);
             renderCalendar();
         };
 
-        // Escuta Realtime
-        onSnapshot(agendamentosRef, snap => {
-            state.agendamentos = {};
-            snap.forEach(doc => {
-                const d = doc.data();
-                state.agendamentos[d.dataHora] = d;
-            });
+        // Listener Realtime
+        onSnapshot(agendamentosRef, (snap) => {
+            allAgendamentos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderCalendar();
-            if (state.selectedDate) renderSlots(state.selectedDate);
+            if (selectedDate) renderSlots();
             document.getElementById('spinner').classList.remove('show');
         });
 
-        // Inicialização
+        // Init
         renderCalendar();
-        new WOW().init();
     </script>
 </body>
 </html>
