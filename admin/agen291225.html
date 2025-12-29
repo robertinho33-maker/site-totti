@@ -2,105 +2,74 @@
 <html lang="pt-br">
 <head>
     <meta charset="utf-8">
-    <title>Studio Totti | Sistema de Gestão</title>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <title>Studio Totti</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
-        :root { --bs-primary: #c5a059; --bg-soft: #f8f9fa; }
-        body { font-family: 'Work Sans', sans-serif; background-color: var(--bg-soft); }
-        
-        /* Sidebar Filtros */
-        .filter-section { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        
-        /* Calendário e Cards */
-        .calendar-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .day { aspect-ratio: 1.2; border: 0.5px solid #f0f0f0; cursor: pointer; transition: 0.2s; position: relative; padding: 5px; }
-        .day:hover { background: #fffcf5; }
-        .day.selected { border: 2px solid var(--bs-primary); background: #fff9ed; }
-        .day-number { font-weight: 600; font-size: 0.9rem; }
-        
-        /* Indicadores de ocupação no calendário */
-        .dots-container { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 4px; }
-        .dot { width: 6px; height: 6px; border-radius: 50%; }
-        .dot-ana { background: #ff6b6b; }
-        .dot-juliana { background: #4ecdc4; }
-        .dot-fernanda { background: #45b7d1; }
-        .dot-outros { background: #96ceb4; }
-
-        /* Lista de Horários */
-        .slot-row { display: flex; gap: 15px; padding: 15px; border-bottom: 1px solid #eee; align-items: flex-start; }
-        .slot-time { min-width: 60px; font-weight: 700; color: #444; }
-        .slot-content { flex: 1; display: flex; flex-wrap: wrap; gap: 10px; }
-        
-        .client-tag { 
-            background: white; border-radius: 8px; padding: 10px; border-left: 5px solid #ccc;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); min-width: 200px; position: relative;
-        }
-        .tag-ana { border-left-color: #ff6b6b; }
-        .tag-juliana { border-left-color: #4ecdc4; }
-        .tag-fernanda { border-left-color: #45b7d1; }
-
-        #spinner { z-index: 10000; transition: opacity 0.5s; }
-        .btn-primary { background-color: var(--bs-primary); border-color: var(--bs-primary); }
+        :root { --primary: #c5a059; }
+        body { background: #f4f4f4; padding-bottom: 50px; }
+        .calendar-box { background: #fff; border-radius: 10px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .day-cell { border: 1px solid #eee; min-height: 60px; cursor: pointer; padding: 5px; background: #fff; }
+        .day-cell:hover { background: #fff9ed; }
+        .day-cell.selected { border: 2px solid var(--primary); background: #fffdf5; }
+        .day-header { font-weight: bold; text-align: center; background: #333; color: #fff; padding: 5px 0; }
+        .slot-row { background: #fff; margin-bottom: 10px; border-radius: 8px; border-left: 5px solid var(--primary); padding: 10px; }
+        .client-item { background: #f8f9fa; border: 1px solid #ddd; padding: 8px; border-radius: 5px; margin-bottom: 5px; position: relative; }
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
 
-    <div id="spinner" class="position-fixed w-100 vh-100 bg-white d-flex align-items-center justify-content-center">
+    <div id="loading-overlay">
         <div class="text-center">
-            <div class="spinner-border text-primary mb-2"></div>
-            <p class="text-muted small">Carregando Agenda...</p>
+            <div class="spinner-border text-primary"></div>
+            <p>Conectando ao banco de dados...</p>
         </div>
     </div>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <nav class="navbar navbar-dark bg-dark mb-4">
         <div class="container">
-            <span class="navbar-brand">STUDIO TOTTI</span>
-            <div class="d-flex gap-2">
-                <button class="btn btn-sm btn-outline-light" onclick="setView('diario')">Diário</button>
-                <button class="btn btn-sm btn-outline-light" onclick="setView('semanal')">Semanal</button>
+            <span class="navbar-brand">STUDIO TOTTI - AGEND - A01</span>
+            <div class="btn-group">
+                <button class="btn btn-outline-light btn-sm" onclick="mudarVisao('diario')">Dia</button>
+                <button class="btn btn-outline-light btn-sm" onclick="mudarVisao('semanal')">Semana</button>
             </div>
         </div>
     </nav>
 
-    <div class="container-fluid px-4">
-        <div class="row g-4">
-            <div class="col-lg-3">
-                <div class="filter-section mb-4">
-                    <h6><i class="bi bi-funnel me-2"></i>Filtrar Profissional</h6>
-                    <select class="form-select mb-3" id="filtroProfissional" onchange="applyFilters()">
-                        <option value="todos">Todos os Profissionais</option>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="calendar-box mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <button class="btn btn-sm btn-dark" onclick="navegarMes(-1)"><</button>
+                        <h6 id="labelMes" class="mb-0">Mês/Ano</h6>
+                        <button class="btn btn-sm btn-dark" onclick="navegarMes(1)">></button>
+                    </div>
+                    <div class="row g-0 text-center day-header small">
+                        <div class="col">D</div><div class="col">S</div><div class="col">T</div><div class="col">Q</div><div class="col">Q</div><div class="col">S</div><div class="col">S</div>
+                    </div>
+                    <div id="gridCalendario" class="row g-0"></div>
+                </div>
+                
+                <div class="calendar-box">
+                    <h6>Filtro</h6>
+                    <select id="filtroProf" class="form-select" onchange="atualizarAgenda()">
+                        <option value="todos">Todos Profissionais</option>
                         <option value="Ana">Ana</option>
                         <option value="Juliana">Juliana</option>
                         <option value="Fernanda">Fernanda</option>
                     </select>
-                    <hr>
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <button class="btn btn-sm" onclick="changeMonth(-1)"><i class="bi bi-chevron-left"></i></button>
-                        <span id="monthYear" class="fw-bold"></span>
-                        <button class="btn btn-sm" onclick="changeMonth(1)"><i class="bi bi-chevron-right"></i></button>
-                    </div>
-                    <div class="calendar-mini" id="calendarGrid">
-                        </div>
                 </div>
             </div>
 
-            <div class="col-lg-9">
-                <div class="calendar-card p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 id="viewTitle" class="mb-0 text-capitalize">Hoje</h4>
-                        <button class="btn btn-primary" onclick="abrirModalAdd()">
-                            <i class="bi bi-plus-lg"></i> Novo Agendamento
-                        </button>
-                    </div>
-                    
-                    <div id="agendaView">
-                        </div>
+            <div class="col-md-9">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 id="tituloAgenda">Selecione um dia</h4>
+                    <button class="btn btn-primary" onclick="abrirModalAdd()">+ Novo Agendamento</button>
                 </div>
+                <div id="listaAgenda"></div>
             </div>
         </div>
     </div>
@@ -109,45 +78,45 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalTitle">Agendar</h5>
+                    <h5 class="modal-title" id="modalTitulo">Agendamento</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="formAgendar">
-                        <input type="hidden" id="editId">
-                        <div class="mb-3">
-                            <label class="form-label">Data</label>
-                            <input type="date" class="form-control" id="f_data" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Horário</label>
-                            <select class="form-select" id="f_hora" required></select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Cliente</label>
-                            <input type="text" class="form-control" id="f_nome" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Profissional</label>
-                            <select class="form-select" id="f_profissional" required>
-                                <option value="Ana">Ana</option>
-                                <option value="Juliana">Juliana</option>
-                                <option value="Fernanda">Fernanda</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Serviço</label>
-                            <input type="text" class="form-control" id="f_servico" required>
-                        </div>
-                    </form>
+                    <input type="hidden" id="fieldId">
+                    <div class="mb-3">
+                        <label class="form-label">Data</label>
+                        <input type="date" id="fieldData" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Hora</label>
+                        <select id="fieldHora" class="form-select"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Cliente</label>
+                        <input type="text" id="fieldNome" class="form-control" placeholder="Nome completo">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Profissional</label>
+                        <select id="fieldProf" class="form-select">
+                            <option value="Ana">Ana</option>
+                            <option value="Juliana">Juliana</option>
+                            <option value="Fernanda">Fernanda</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Serviço</label>
+                        <input type="text" id="fieldServico" class="form-control">
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="salvar()">Confirmar</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-primary" onclick="acaoSalvar()">Salvar</button>
                 </div>
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
@@ -164,163 +133,154 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const ref = collection(db, "agendamentos");
+        const colRef = collection(db, "agendamentos");
 
-        let state = {
-            view: 'diario', // ou 'semanal'
-            selectedDate: new Date().toISOString().split('T')[0],
-            currentMonth: new Date(),
-            data: [],
-            filterProf: 'todos'
-        };
+        let agendaGlobal = [];
+        let dataSelecionada = new Date().toISOString().split('T')[0];
+        let mesVisivel = new Date();
+        let visao = 'diario'; 
 
         const HORARIOS = ["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00"];
 
-        // Iniciar
-        onSnapshot(ref, (snap) => {
-            state.data = snap.docs.map(d => ({id: d.id, ...d.data()}));
-            renderAll();
-            document.getElementById('spinner').style.opacity = '0';
-            setTimeout(() => document.getElementById('spinner').classList.add('d-none'), 500);
-        }, (err) => {
-            alert("Erro de conexão com Firebase. Verifique as Rules.");
-            console.error(err);
+        // LISTENER REALTIME
+        onSnapshot(colRef, (snapshot) => {
+            agendaGlobal = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            atualizarCalendario();
+            atualizarAgenda();
+            document.getElementById('loading-overlay').style.display = 'none';
+        }, (error) => {
+            console.error("ERRO FIREBASE:", error);
+            alert("Erro ao carregar dados. Verifique o console.");
         });
 
-        function renderAll() {
-            renderCalendarMini();
-            renderAgenda();
-        }
+        window.atualizarCalendario = () => {
+            const grid = document.getElementById('gridCalendario');
+            const label = document.getElementById('labelMes');
+            grid.innerHTML = '';
+            
+            const ano = mesVisivel.getFullYear();
+            const mes = mesVisivel.getMonth();
+            label.textContent = mesVisivel.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
-        function renderCalendarMini() {
-            const grid = document.getElementById('calendarGrid');
-            const year = state.currentMonth.getFullYear();
-            const month = state.currentMonth.getMonth();
-            
-            document.getElementById('monthYear').textContent = state.currentMonth.toLocaleDateString('pt-BR', {month:'short', year:'numeric'});
-            
-            grid.innerHTML = '<div class="d-flex text-muted small fw-bold mb-1"><div style="width:14.2%">D</div><div style="width:14.2%">S</div><div style="width:14.2%">T</div><div style="width:14.2%">Q</div><div style="width:14.2%">Q</div><div style="width:14.2%">S</div><div style="width:14.2%">S</div></div>';
-            
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            
-            let html = '<div class="d-flex flex-wrap">';
-            for(let i=0; i<firstDay; i++) html += '<div class="day other-month" style="width:14.2%"></div>';
-            
-            for(let d=1; d<=daysInMonth; d++) {
-                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                const hasApps = state.data.filter(a => a.data === dateStr);
-                const isSelected = state.selectedDate === dateStr;
-                
-                html += `
-                    <div class="day ${isSelected?'selected':''}" style="width:14.2%" onclick="selectDate('${dateStr}')">
-                        <span class="day-number">${d}</span>
-                        <div class="dots-container">
-                            ${hasApps.slice(0,3).map(a => `<div class="dot dot-${a.profissional.toLowerCase()}"></div>`).join('')}
-                        </div>
-                    </div>
-                `;
+            const primeiroDiaSemana = new Date(ano, mes, 1).getDay();
+            const totalDiasMes = new Date(ano, mes + 1, 0).getDate();
+
+            for (let i = 0; i < primeiroDiaSemana; i++) {
+                grid.innerHTML += `<div class="col-1 day-cell" style="flex: 0 0 14.28%; border:none"></div>`;
             }
-            grid.innerHTML += html + '</div>';
-        }
 
-        function renderAgenda() {
-            const container = document.getElementById('agendaView');
-            container.innerHTML = '';
+            for (let dia = 1; dia <= totalDiasMes; dia++) {
+                const dataString = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+                const temAgendamento = agendaGlobal.some(a => a.data === dataString);
+                const selecionada = dataSelecionada === dataString ? 'selected' : '';
+                
+                grid.innerHTML += `
+                    <div class="col-1 day-cell ${selecionada}" style="flex: 0 0 14.28%" onclick="selecionarDia('${dataString}')">
+                        <small>${dia}</small>
+                        ${temAgendamento ? '<div class="bg-primary rounded-circle mx-auto" style="width:5px; height:5px"></div>' : ''}
+                    </div>`;
+            }
+        };
+
+        window.atualizarAgenda = () => {
+            const lista = document.getElementById('listaAgenda');
+            lista.innerHTML = '';
+            const filtro = document.getElementById('filtroProf').value;
             
-            const targetDates = state.view === 'diario' ? [state.selectedDate] : getWeek(state.selectedDate);
+            const datasParaMostrar = visao === 'diario' ? [dataSelecionada] : calcularSemana(dataSelecionada);
             
-            targetDates.forEach(date => {
-                const displayDate = new Date(date + 'T12:00:00').toLocaleDateString('pt-BR', {weekday:'long', day:'numeric', month:'short'});
-                container.innerHTML += `<div class="bg-light p-2 mt-3 fw-bold small text-uppercase">${displayDate}</div>`;
+            document.getElementById('tituloAgenda').textContent = visao === 'diario' ? `Dia: ${dataSelecionada}` : "Visão Semanal";
+
+            datasParaMostrar.forEach(dataStr => {
+                lista.innerHTML += `<div class="mt-4 mb-2 fw-bold text-muted border-bottom">${dataStr}</div>`;
                 
                 HORARIOS.forEach(hora => {
-                    let apps = state.data.filter(a => a.data === date && a.hora === hora);
-                    if(state.filterProf !== 'todos') apps = apps.filter(a => a.profissional === state.filterProf);
-                    
-                    const row = document.createElement('div');
-                    row.className = 'slot-row';
-                    row.innerHTML = `
-                        <div class="slot-time">${hora}</div>
-                        <div class="slot-content">
-                            ${apps.map(a => `
-                                <div class="client-tag tag-${a.profissional.toLowerCase()}">
-                                    <div class="small fw-bold">${a.nome}</div>
-                                    <div style="font-size:0.75rem">${a.servico} (${a.profissional})</div>
-                                    <div class="mt-2 d-flex gap-2">
-                                        <button class="btn btn-sm p-0 text-warning" onclick="editar('${a.id}')"><i class="bi bi-pencil"></i></button>
-                                        <button class="btn btn-sm p-0 text-danger" onclick="excluir('${a.id}')"><i class="bi bi-trash"></i></button>
+                    let ags = agendaGlobal.filter(a => a.data === dataStr && a.hora === hora);
+                    if (filtro !== 'todos') ags = ags.filter(a => a.profissional === filtro);
+
+                    lista.innerHTML += `
+                        <div class="slot-row d-flex align-items-start">
+                            <div style="min-width: 80px"><strong>${hora}</strong></div>
+                            <div class="flex-grow-1 d-flex flex-wrap gap-2">
+                                ${ags.map(a => `
+                                    <div class="client-item shadow-sm">
+                                        <strong>${a.nome}</strong><br>
+                                        <small>${a.servico} (${a.profissional})</small>
+                                        <div class="mt-1">
+                                            <button class="btn btn-sm p-0 text-warning" onclick="abrirEditar('${a.id}')"><i class="bi bi-pencil"></i></button>
+                                            <button class="btn btn-sm p-0 text-danger ms-2" onclick="remover('${a.id}')"><i class="bi bi-trash"></i></button>
+                                        </div>
                                     </div>
-                                </div>
-                            `).join('')}
-                            <button class="btn btn-sm btn-light border" onclick="abrirModalAdd('${date}', '${hora}')"><i class="bi bi-plus"></i></button>
-                        </div>
-                    `;
-                    container.appendChild(row);
+                                `).join('')}
+                                <button class="btn btn-sm btn-outline-secondary" onclick="abrirModalAdd('${dataStr}', '${hora}')">+</button>
+                            </div>
+                        </div>`;
                 });
             });
-        }
+        };
 
-        // Funções de Apoio
-        window.selectDate = (d) => { state.selectedDate = d; renderAll(); };
-        window.changeMonth = (v) => { state.currentMonth.setMonth(state.currentMonth.getMonth()+v); renderCalendarMini(); };
-        window.setView = (v) => { state.view = v; renderAgenda(); };
-        window.applyFilters = () => { state.filterProf = document.getElementById('filtroProfissional').value; renderAgenda(); };
-
-        function getWeek(date) {
-            let curr = new Date(date + 'T12:00:00');
-            let week = [];
-            curr.setDate(curr.getDate() - curr.getDay());
-            for (let i = 0; i < 7; i++) {
-                week.push(curr.toISOString().split('T')[0]);
-                curr.setDate(curr.getDate() + 1);
+        // FUNÇÕES DE NAVEGAÇÃO
+        window.selecionarDia = (d) => { dataSelecionada = d; atualizarCalendario(); atualizarAgenda(); };
+        window.navegarMes = (n) => { mesVisivel.setMonth(mesVisivel.getMonth() + n); atualizarCalendario(); };
+        window.mudarVisao = (v) => { visao = v; atualizarAgenda(); };
+        
+        function calcularSemana(dataBase) {
+            let d = new Date(dataBase + 'T12:00:00');
+            let diaSemana = d.getDay();
+            let inicio = new Date(d);
+            inicio.setDate(d.getDate() - diaSemana);
+            
+            let dias = [];
+            for(let i=0; i<7; i++) {
+                let temp = new Date(inicio);
+                temp.setDate(inicio.getDate() + i);
+                dias.push(temp.toISOString().split('T')[0]);
             }
-            return week;
+            return dias;
         }
 
         // CRUD
-        window.abrirModalAdd = (d = state.selectedDate, h = "09:00") => {
-            document.getElementById('formAgendar').reset();
-            document.getElementById('editId').value = '';
-            document.getElementById('f_data').value = d;
-            
-            const hSel = document.getElementById('f_hora');
-            hSel.innerHTML = HORARIOS.map(hor => `<option ${hor===h?'selected':''}>${hor}</option>`).join('');
-            
+        window.abrirModalAdd = (d = dataSelecionada, h = "09:00") => {
+            document.getElementById('fieldId').value = '';
+            document.getElementById('fieldData').value = d;
+            document.getElementById('fieldNome').value = '';
+            document.getElementById('fieldServico').value = '';
+            document.getElementById('fieldHora').innerHTML = HORARIOS.map(hor => `<option ${hor===h?'selected':''}>${hor}</option>`).join('');
             new bootstrap.Modal('#modalAgendar').show();
         };
 
-        window.salvar = async () => {
-            const id = document.getElementById('editId').value;
-            const payload = {
-                data: document.getElementById('f_data').value,
-                hora: document.getElementById('f_hora').value,
-                nome: document.getElementById('f_nome').value,
-                profissional: document.getElementById('f_profissional').value,
-                servico: document.getElementById('f_servico').value,
-                dataHora: document.getElementById('f_data').value + ' ' + document.getElementById('f_hora').value
+        window.abrirEditar = (id) => {
+            const a = agendaGlobal.find(x => x.id === id);
+            abrirModalAdd(a.data, a.hora);
+            document.getElementById('fieldId').value = a.id;
+            document.getElementById('fieldNome').value = a.nome;
+            document.getElementById('fieldProf').value = a.profissional;
+            document.getElementById('fieldServico').value = a.servico;
+            document.getElementById('modalTitulo').textContent = "Editar Agendamento";
+        };
+
+        window.acaoSalvar = async () => {
+            const id = document.getElementById('fieldId').value;
+            const obj = {
+                data: document.getElementById('fieldData').value,
+                hora: document.getElementById('fieldHora').value,
+                nome: document.getElementById('fieldNome').value,
+                profissional: document.getElementById('fieldProf').value,
+                servico: document.getElementById('fieldServico').value
             };
 
-            if(id) await updateDoc(doc(db, "agendamentos", id), payload);
-            else await addDoc(ref, payload);
-            
-            bootstrap.Modal.getInstance('#modalAgendar').hide();
+            if(!obj.nome) return alert("Digite o nome do cliente");
+
+            try {
+                if(id) await updateDoc(doc(db, "agendamentos", id), obj);
+                else await addDoc(colRef, obj);
+                bootstrap.Modal.getInstance('#modalAgendar').hide();
+            } catch(e) { alert("Erro ao salvar!"); }
         };
 
-        window.editar = (id) => {
-            const a = state.data.find(x => x.id === id);
-            abrirModalAdd(a.data, a.hora);
-            document.getElementById('editId').value = a.id;
-            document.getElementById('f_nome').value = a.nome;
-            document.getElementById('f_profissional').value = a.profissional;
-            document.getElementById('f_servico').value = a.servico;
-            document.getElementById('modalTitle').textContent = "Editar Agendamento";
-        };
-
-        window.excluir = async (id) => {
+        window.remover = async (id) => {
             if(confirm("Excluir?")) await deleteDoc(doc(db, "agendamentos", id));
         };
-
     </script>
 </body>
 </html>
